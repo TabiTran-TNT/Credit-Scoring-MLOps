@@ -99,7 +99,8 @@ def runtime(monkeypatch, tmp_path, model_artifacts):
     monkeypatch.setenv("MODEL_PATH", str(model_artifacts["model"]))
     monkeypatch.setenv("FEATURES_PATH", str(model_artifacts["columns"]))
     monkeypatch.setenv("LOG_DIR", str(tmp_path / "logs"))
-    for name in ("_model", "_feature_columns", "_model_id"):
+    monkeypatch.setenv("DEPLOYMENT_MANIFEST", "")
+    for name in ("_model", "_feature_columns", "_model_id", "_model_version"):
         monkeypatch.setattr(model_loader, name, None)
 
     logger = logging.getLogger(LOGGER_NAME)

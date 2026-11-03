@@ -21,6 +21,8 @@ def _resolve_path(env_name, default):
 def load_model():
     """Load once and identify the exact model bytes that were loaded."""
     global _model, _feature_columns, _model_id, _model_version
+    from dotenv import load_dotenv
+    load_dotenv(PROJECT_ROOT / '.env', override=False)
 
     model_path = _resolve_path("MODEL_PATH", "model/credit_model.pkl")
     features_path = _resolve_path("FEATURES_PATH", "model/feature_columns.pkl")

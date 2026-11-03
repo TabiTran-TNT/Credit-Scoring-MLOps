@@ -13,6 +13,7 @@ from app.model_loader import (
 from app.schemas import HealthResponse, LoanApplication, PredictionResponse
 from credit_scoring.features import prepare_features
 from monitoring.logger import get_logger, log_event
+from monitoring.metrics import REQUESTS, LATENCY, CONTENT_TYPE_LATEST, generate_latest
 
 FEATURE_REPRESENTATION = "engineered_features_before_imputation"
 
@@ -37,6 +38,27 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+
+@app.middleware('http')
+async def prediction_metrics(request, call_next):
+    if request.url.path != '/predict':
+        return await call_next(request)
+    started = perf_counter()
+    try:
+        result = await call_next(request)
+        REQUESTS.labels(status=str(result.status_code)).inc()
+        return result
+    except Exception:
+        REQUESTS.labels(status='500').inc()
+        raise
+    finally:
+        LATENCY.observe(perf_counter() - started)
+
+
+@app.get('/metrics', include_in_schema=False)
+def metrics():
+    return Response(content=generate_latest(), headers={'Content-Type': CONTENT_TYPE_LATEST})
 
 
 @app.get("/health", response_model=HealthResponse)
