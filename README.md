@@ -313,11 +313,3 @@ validation rows. Validation ROC-AUC was **0.754984**, with average precision
 and decision parity was checked on every validation row. These are validation
 results on a static dataset, not production performance guarantees.
 
-The project starts from the
-[Home Credit MLOps tutorial](https://hackernoon.com/weekend-project-i-built-a-full-mlops-pipeline-for-a-credit-scoring-model-and-you-can-too).
-The static split does not establish event-time correctness, an online feature
-store or near-real-time ingestion. Demographic attributes and proxies need
-separate review before real lending use. Local filesystem/registry access is
-trusted; authentication, authorization, retention and centralized logging belong
-to the deployment environment. Feature logs contain financial/demographic data
-and should not be published with the source code.
