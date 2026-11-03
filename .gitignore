@@ -26,3 +26,16 @@ Thumbs.db
 # Log files — generated at runtime
 *.log
 logs/
+
+# Generated local state
+.mlflow/
+mlruns/
+model/
+deployments/
+reports/
+work/
+pip-cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.onnx
