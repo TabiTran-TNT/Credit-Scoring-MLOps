@@ -1,3 +1,5 @@
+from hashlib import sha256
+from io import BytesIO
 from pathlib import Path
 import os
 
@@ -6,6 +8,7 @@ import joblib
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 _model = None
 _feature_columns = None
+_model_id = None
 
 
 def _resolve_path(env_name, default):
@@ -14,12 +17,13 @@ def _resolve_path(env_name, default):
 
 
 def load_model():
-    """Load and validate the fitted pipeline once per server process."""
-    global _model, _feature_columns
+    """Load once and identify the exact model bytes that were loaded."""
+    global _model, _feature_columns, _model_id
 
     model_path = _resolve_path("MODEL_PATH", "model/credit_model.pkl")
     features_path = _resolve_path("FEATURES_PATH", "model/feature_columns.pkl")
-    model = joblib.load(model_path)
+    model_bytes = model_path.read_bytes()
+    model = joblib.load(BytesIO(model_bytes))
     columns = joblib.load(features_path)
 
     if not isinstance(columns, list) or not columns:
@@ -37,6 +41,7 @@ def load_model():
 
     _model = model
     _feature_columns = tuple(columns)
+    _model_id = "sha256:" + sha256(model_bytes).hexdigest()
     return _model
 
 
@@ -50,3 +55,9 @@ def get_feature_columns():
     if _feature_columns is None:
         raise RuntimeError("Feature columns have not been loaded.")
     return list(_feature_columns)
+
+
+def get_model_id():
+    if _model_id is None:
+        raise RuntimeError("Model has not been loaded.")
+    return _model_id
