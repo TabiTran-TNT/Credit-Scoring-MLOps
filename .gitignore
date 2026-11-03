@@ -1,0 +1,28 @@
+# Python bytecode — generated automatically, no need to track
+__pycache__/
+*.py[cod]
+
+# Virtual environments — each developer creates their own
+.venv/
+venv/
+
+# Data files — too large for Git (use DVC or Git LFS for these)
+*.csv
+*.parquet
+data/
+
+# Secrets — NEVER commit these. Use environment variables instead.
+.env
+*.secret
+
+# IDE configuration — specific to each developer's setup
+.vscode/
+.idea/
+
+# OS-specific files — useless noise
+.DS_Store
+Thumbs.db
+
+# Log files — generated at runtime
+*.log
+logs/
