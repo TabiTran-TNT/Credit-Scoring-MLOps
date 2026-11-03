@@ -27,7 +27,7 @@ def git_metadata(project_root):
         except (OSError, subprocess.TimeoutExpired):
             return None
     commit = git("rev-parse", "HEAD")
-    status = git("status", "--porcelain") if commit else None
+    status = git("status", "--porcelain", "--", ".") if commit else None
     return {"git_commit": commit, "git_dirty": None if status is None else bool(status)}
 
 
@@ -100,6 +100,8 @@ def log_training_model(config, pipeline, X_train, metrics, metadata, model_dir, 
     )
     mlflow.log_artifact(str(model_dir / "feature_columns.pkl"), artifact_path="metadata")
     mlflow.log_artifact(str(data_dir / "reference_data.csv"), artifact_path="reference")
+    for filename in ("validation_data.csv", "validation_labels.csv"):
+        mlflow.log_artifact(str(data_dir / filename), artifact_path="evaluation")
     for path in source_files:
         # Keep original paths; features.py and train_model.py must not collide.
         artifact_dir = "source/" + path.parent.name

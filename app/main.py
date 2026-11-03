@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 import pandas as pd
 
 from app.model_loader import (
-    get_feature_columns, get_model, get_model_id, load_model,
+    get_feature_columns, get_model, get_model_id, get_model_version, load_model,
 )
 from app.schemas import HealthResponse, LoanApplication, PredictionResponse
 from credit_scoring.features import prepare_features
@@ -94,6 +94,7 @@ def predict(application: LoanApplication, response: Response):
             "prediction",
             request_id=request_id,
             model_id=model_id,
+            model_version=get_model_version(),
             feature_representation=FEATURE_REPRESENTATION,
             features=_feature_record(features),
             outputs=result.model_dump(),
@@ -101,6 +102,8 @@ def predict(application: LoanApplication, response: Response):
         )
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Model-ID"] = model_id
+        if get_model_version() is not None:
+            response.headers["X-Model-Version"] = get_model_version()
         return result
     except Exception:
         log_event(

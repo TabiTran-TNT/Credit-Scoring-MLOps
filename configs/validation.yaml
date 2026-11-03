@@ -1,0 +1,8 @@
+# Portfolio defaults; calibrate these for an actual lending policy.
+min_rows: 100
+min_roc_auc: 0.70
+min_average_precision: 0.10
+max_auc_drop: 0.005
+max_p95_latency_ms: 100.0
+latency_repeats: 30
+max_report_age_hours: 24
