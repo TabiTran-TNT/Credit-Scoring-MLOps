@@ -1,0 +1,56 @@
+name: credit-scoring-mlops
+services:
+  mlflow:
+    build: .
+    image: credit-scoring-mlops:local
+    command: [python, -m, mlflow, server, --host, 0.0.0.0, --port, '5000', --workers, '1',
+              --backend-store-uri, 'sqlite:////workspace/.mlflow/mlflow.db',
+              --serve-artifacts, --artifacts-destination, /workspace/.mlflow/artifacts,
+              --allowed-hosts, 'mlflow:5000,localhost:5000,127.0.0.1:5000']
+    ports: ['127.0.0.1:5000:5000']
+    volumes: ['mlflow-state:/workspace/.mlflow']
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+  api:
+    build: .
+    image: credit-scoring-mlops:local
+    environment:
+      MODEL_PATH: /workspace/model/credit_model.pkl
+      FEATURES_PATH: /workspace/model/feature_columns.pkl
+      DEPLOYMENT_MANIFEST: ${DEPLOYMENT_MANIFEST:-}
+      LOG_DIR: /workspace/logs
+    ports: ['127.0.0.1:8000:8000']
+    volumes:
+      - ./model:/workspace/model:ro
+      - ./deployments:/workspace/deployments:ro
+      - ./logs:/workspace/logs
+    restart: unless-stopped
+  tools:
+    build: .
+    image: credit-scoring-mlops:local
+    profiles: [tools]
+    user: '${LOCAL_UID:-1000}:${LOCAL_GID:-1000}'
+    command: [python, -m, scripts.train_model]
+    environment:
+      MLFLOW_ENABLED: 'true'
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_EXPERIMENT_NAME: credit-scoring
+      MLFLOW_REGISTERED_MODEL_NAME: credit-scoring
+      DEPLOYMENT_MANIFEST: ${DEPLOYMENT_MANIFEST:-}
+      LOG_DIR: /workspace/reports/tool-logs
+    volumes:
+      - ./data:/workspace/data
+      - ./model:/workspace/model
+      - ./deployments:/workspace/deployments
+      - ./reports:/workspace/reports
+      - ./work:/workspace/work
+      - ./logs:/workspace/logs:ro
+    depends_on:
+      mlflow: {condition: service_healthy}
+    healthcheck: {disable: true}
+volumes:
+  mlflow-state:

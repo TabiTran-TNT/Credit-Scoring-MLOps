@@ -1,0 +1,16 @@
+.git
+.venv
+.env
+.mlflow
+.pytest_cache
+**/__pycache__
+data
+model
+deployments
+logs
+reports
+work
+pip-cache
+notebooks
+tests
+*.onnx
