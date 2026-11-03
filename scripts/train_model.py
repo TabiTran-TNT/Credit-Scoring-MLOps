@@ -12,7 +12,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from prepare_data import load_and_prepare_data
+from scripts.prepare_data import load_and_prepare_data
 
 
 # Resolve paths relative to the project, regardless of working directory.
